@@ -1,0 +1,84 @@
+1. What are Java 8 Streams?
+
+In Java 8, Streams are a powerful feature introduced to process collections of data in a functional style. They allow you to perform operations like filtering, mapping, and reducing data in a clean, declarative way instead of writing long loops.
+
+A Stream does not store data. It processes data from a source such as:
+Collections (List, Set)
+Arrays
+Files
+I/O channels
+
+Advantages:
+Less code
+More readable
+Functional programming style
+Supports parallel processing
+
+
+Think of a stream as a pipeline of operations applied to data.
+
+A Stream pipeline has 3 parts:
+
+Source → Intermediate Operations → Terminal Operation
+
+Intermediate = returns Stream
+Terminal = returns result/value
+
+Intermediate operations return another Stream and are lazy (they do not execute until a terminal operation is called).
+
+| Operation       | Description                                |
+| --------------- | ------------------------------------------ |
+| `filter()`      | Filters elements based on condition        |
+| `map()`         | Transforms elements                        |
+| `flatMap()`     | Flattens nested streams                    |
+| `distinct()`    | Removes duplicate elements                 |
+| `sorted()`      | Sorts elements                             |
+| `limit()`       | Limits number of elements                  |
+| `skip()`        | Skips first N elements                     |
+| `peek()`        | Performs action while processing           |
+| `mapToInt()`    | Converts stream to IntStream               |
+| `mapToLong()`   | Converts stream to LongStream              |
+| `mapToDouble()` | Converts stream to DoubleStream            |
+| `boxed()`       | Converts primitive stream to object stream |
+
+
+Terminal operations end the stream pipeline and produce a result or side effect.
+
+| Operation          | Description                      |
+| ------------------ | -------------------------------- |
+| `forEach()`        | Performs action for each element |
+| `forEachOrdered()` | Ordered version of forEach       |
+| `collect()`        | Converts stream to collection    |
+| `reduce()`         | Reduces stream to single value   |
+| `count()`          | Counts elements                  |
+| `min()`            | Finds minimum element            |
+| `max()`            | Finds maximum element            |
+| `findFirst()`      | Returns first element            |
+| `findAny()`        | Returns any element              |
+| `anyMatch()`       | Checks if any element matches    |
+| `allMatch()`       | Checks if all elements match     |
+| `noneMatch()`      | Checks if no element matches     |
+| `toArray()`        | Converts stream to array         |
+| `iterator()`       | Returns iterator                 |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

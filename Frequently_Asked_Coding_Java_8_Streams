@@ -1,0 +1,596 @@
+Frequently Asked Coding Questions — Java Streams
+
+1. Find the second-highest salary from a list of employees
+
+int secondHighestSalary = employees.stream()
+        .map(Employee::getSalary)
+        .distinct()
+        .sorted(Comparator.reverseOrder())
+        .skip(1)
+        .findFirst()
+        .orElseThrow();
+
+Explanation
+
+1. "map()" → extracts salaries.
+2. "distinct()" → removes duplicate salaries.
+3. "sorted(Comparator.reverseOrder())" → sorts highest to lowest.
+4. "skip(1)" → skips the highest salary.
+5. "findFirst()" → gets the second-highest salary.
+
+---
+
+2. Find the highest salary in each department
+
+Map<String, Employee> result = employees.stream()
+        .collect(Collectors.groupingBy(
+                Employee::getDepartment,
+                Collectors.collectingAndThen(
+                        Collectors.maxBy(Comparator.comparing(Employee::getSalary)),
+                        Optional::get
+                )
+        ));
+
+If only the salary is required
+
+Map<String, Integer> result = employees.stream()
+        .collect(Collectors.groupingBy(
+                Employee::getDepartment,
+                Collectors.collectingAndThen(
+                        Collectors.maxBy(Comparator.comparing(Employee::getSalary)),
+                        e -> e.get().getSalary()
+                )
+        ));
+
+---
+
+3. Find duplicate elements in a list
+
+Set<Integer> seen = new HashSet<>();
+
+List<Integer> duplicates = numbers.stream()
+        .filter(n -> !seen.add(n))
+        .distinct()
+        .toList();
+
+Example
+
+Input  : [1, 2, 3, 2, 4, 1, 5]
+Output : [2, 1]
+
+Key idea
+
+"Set.add()" returns:
+
+- "true" → element is new
+- "false" → element already exists
+
+---
+
+4. Find the first non-repeated character in a string
+
+Character result = str.chars()
+        .mapToObj(c -> (char) c)
+        .collect(Collectors.groupingBy(
+                Function.identity(),
+                LinkedHashMap::new,
+                Collectors.counting()
+        ))
+        .entrySet()
+        .stream()
+        .filter(entry -> entry.getValue() == 1)
+        .map(Map.Entry::getKey)
+        .findFirst()
+        .orElse(null);
+
+Why "LinkedHashMap"?
+
+It preserves insertion order.
+
+That is important because we need the first non-repeated character.
+
+---
+
+5. Find the frequency of each character in a string
+
+Map<Character, Long> frequency = str.chars()
+        .mapToObj(c -> (char) c)
+        .collect(Collectors.groupingBy(
+                Function.identity(),
+                Collectors.counting()
+        ));
+
+Example
+
+Input  : "hello"
+
+Output :
+h = 1
+e = 1
+l = 2
+o = 1
+
+---
+
+6. Find the frequency of each word in a sentence
+
+Map<String, Long> frequency = Arrays.stream(sentence.split("\\s+"))
+        .collect(Collectors.groupingBy(
+                Function.identity(),
+                Collectors.counting()
+        ));
+
+Example
+
+Input:
+"java is easy java is powerful"
+
+Output:
+java = 2
+is = 2
+easy = 1
+powerful = 1
+
+---
+
+7. Find the first repeated character in a string
+
+Set<Character> seen = new HashSet<>();
+
+Character result = str.chars()
+        .mapToObj(c -> (char) c)
+        .filter(c -> !seen.add(c))
+        .findFirst()
+        .orElse(null);
+
+Example
+
+Input  : "swiss"
+Output : 's'
+
+---
+
+8. Find employees whose salary is greater than the average salary
+
+double averageSalary = employees.stream()
+        .mapToInt(Employee::getSalary)
+        .average()
+        .orElse(0);
+
+List<Employee> result = employees.stream()
+        .filter(e -> e.getSalary() > averageSalary)
+        .toList();
+
+Important interview point
+
+You need two operations:
+
+1. Calculate average salary.
+2. Filter employees based on that average.
+
+---
+
+9. Group employees by department
+
+Map<String, List<Employee>> result = employees.stream()
+        .collect(Collectors.groupingBy(Employee::getDepartment));
+
+Example
+
+IT        -> [John, David]
+HR        -> [Mike, Sarah]
+Finance   -> [Alex, Robert]
+
+---
+
+10. Sort employees by salary using Streams
+
+Ascending order
+
+List<Employee> result = employees.stream()
+        .sorted(Comparator.comparing(Employee::getSalary))
+        .toList();
+
+Descending order
+
+List<Employee> result = employees.stream()
+        .sorted(Comparator.comparing(Employee::getSalary).reversed())
+        .toList();
+
+---
+
+11. Find the maximum/minimum element from a list
+
+Maximum
+
+int max = numbers.stream()
+        .max(Integer::compareTo)
+        .orElseThrow();
+
+Minimum
+
+int min = numbers.stream()
+        .min(Integer::compareTo)
+        .orElseThrow();
+
+Alternative
+
+int max = numbers.stream()
+        .mapToInt(Integer::intValue)
+        .max()
+        .orElseThrow();
+
+---
+
+12. Find the top 3 highest salaries
+
+List<Integer> top3 = employees.stream()
+        .map(Employee::getSalary)
+        .distinct()
+        .sorted(Comparator.reverseOrder())
+        .limit(3)
+        .toList();
+
+Example
+
+Salaries:
+50000, 80000, 90000, 70000, 100000
+
+Top 3:
+100000, 90000, 80000
+
+---
+
+13. Find the Nth highest salary
+
+int n = 3;
+
+int nthHighest = employees.stream()
+        .map(Employee::getSalary)
+        .distinct()
+        .sorted(Comparator.reverseOrder())
+        .skip(n - 1)
+        .findFirst()
+        .orElseThrow();
+
+Logic
+
+For the 3rd highest:
+
+sorted descending
+        ↓
+skip(2)
+        ↓
+findFirst()
+        ↓
+3rd highest
+
+---
+
+14. Partition numbers into even and odd
+
+Map<Boolean, List<Integer>> result = numbers.stream()
+        .collect(Collectors.partitioningBy(n -> n % 2 == 0));
+
+Result
+
+true  -> even numbers
+false -> odd numbers
+
+Example:
+
+Input:
+[1, 2, 3, 4, 5, 6]
+
+Output:
+true  -> [2, 4, 6]
+false -> [1, 3, 5]
+
+---
+
+15. Find the sum/average of salaries
+
+Sum
+
+int sum = employees.stream()
+        .mapToInt(Employee::getSalary)
+        .sum();
+
+Average
+
+double average = employees.stream()
+        .mapToInt(Employee::getSalary)
+        .average()
+        .orElse(0);
+
+---
+
+16. Convert "List<Employee>" into "Map<Id, Employee>"
+
+Map<Integer, Employee> employeeMap = employees.stream()
+        .collect(Collectors.toMap(
+                Employee::getId,
+                Function.identity()
+        ));
+
+If duplicate IDs are possible
+
+Map<Integer, Employee> employeeMap = employees.stream()
+        .collect(Collectors.toMap(
+                Employee::getId,
+                Function.identity(),
+                (existing, replacement) -> existing
+        ));
+
+Important interview point
+
+Without a merge function, duplicate keys cause:
+
+IllegalStateException
+
+---
+
+17. Find employees whose names start with a particular character
+
+char ch = 'A';
+
+List<Employee> result = employees.stream()
+        .filter(e -> e.getName().startsWith(String.valueOf(ch)))
+        .toList();
+
+Example
+
+Input:
+Alex
+John
+Andrew
+David
+
+Character:
+A
+
+Output:
+Alex
+Andrew
+
+---
+
+18. Find the longest string in a list
+
+String longest = strings.stream()
+        .max(Comparator.comparingInt(String::length))
+        .orElse(null);
+
+Example
+
+Input:
+["Java", "Spring", "Microservices"]
+
+Output:
+"Microservices"
+
+---
+
+19. Remove duplicates from a list using Streams
+
+List<Integer> result = numbers.stream()
+        .distinct()
+        .toList();
+
+Example
+
+Input:
+[1, 2, 2, 3, 3, 4]
+
+Output:
+[1, 2, 3, 4]
+
+Important
+
+"distinct()" removes duplicates while maintaining the encounter order for an ordered stream.
+
+---
+
+20. Find common elements between two lists
+
+List<Integer> common = list1.stream()
+        .filter(list2::contains)
+        .distinct()
+        .toList();
+
+Example
+
+List 1:
+[1, 2, 3, 4]
+
+List 2:
+[3, 4, 5, 6]
+
+Common:
+[3, 4]
+
+Better approach for large lists
+
+Convert the second list into a "Set":
+
+Set<Integer> set = new HashSet<>(list2);
+
+List<Integer> common = list1.stream()
+        .filter(set::contains)
+        .distinct()
+        .toList();
+
+This avoids repeatedly scanning "list2".
+
+---
+
+Employee Class Used in Examples
+
+class Employee {
+
+    private int id;
+    private String name;
+    private String department;
+    private int salary;
+
+    public Employee(int id, String name, String department, int salary) {
+        this.id = id;
+        this.name = name;
+        this.department = department;
+        this.salary = salary;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public int getSalary() {
+        return salary;
+    }
+}
+
+Imports
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+Important Stream Operations Used
+
+Operation| Purpose
+"filter()"| Select elements based on condition
+"map()"| Transform elements
+"mapToInt()"| Convert to "IntStream"
+"sorted()"| Sort elements
+"distinct()"| Remove duplicates
+"limit()"| Take first N elements
+"skip()"| Skip first N elements
+"findFirst()"| Get first element
+"max()"| Find maximum
+"min()"| Find minimum
+"sum()"| Calculate sum
+"average()"| Calculate average
+"groupingBy()"| Group elements
+"partitioningBy()"| Partition into two groups
+"toMap()"| Convert stream into Map
+"counting()"| Count elements
+"collect()"| Collect stream results
+
+Interview Pattern Recognition
+
+Most of these questions can be solved by recognizing a small number of patterns:
+
+1. Highest / Lowest
+   
+   - "max()"
+   - "min()"
+   - "sorted()"
+
+2. Nth Highest
+   
+   - "distinct()"
+   - "sorted(reverseOrder())"
+   - "skip()"
+   - "findFirst()"
+
+3. Frequency
+   
+   - "groupingBy()"
+   - "counting()"
+
+4. Grouping
+   
+   - "groupingBy()"
+
+5. Even / Odd
+   
+   - "partitioningBy()"
+
+6. Filtering
+   
+   - "filter()"
+
+7. Transformation
+   
+   - "map()"
+
+8. Duplicate Removal
+   
+   - "distinct()"
+
+9. List → Map
+   
+   - "Collectors.toMap()"
+
+10. Top N
+
+- "sorted()"
+- "limit()"
+
+---
+
+Quick Revision
+
+Second highest
+    → distinct → sorted(reverseOrder) → skip(1) → findFirst
+
+Highest per department
+    → groupingBy → maxBy
+
+Duplicates
+    → HashSet + filter
+    OR
+    → groupingBy + counting
+
+First non-repeated character
+    → LinkedHashMap + counting → filter(count == 1)
+
+Character frequency
+    → groupingBy + counting
+
+Word frequency
+    → split → groupingBy + counting
+
+First repeated character
+    → HashSet + filter
+
+Above average salary
+    → average → filter
+
+Group employees
+    → groupingBy
+
+Sort employees
+    → sorted(Comparator)
+
+Top 3
+    → sorted(reverseOrder) → limit(3)
+
+Nth highest
+    → distinct → sorted(reverseOrder) → skip(n - 1)
+
+Even/Odd
+    → partitioningBy
+
+Sum
+    → mapToInt → sum
+
+Average
+    → mapToInt → average
+
+List → Map
+    → Collectors.toMap
+
+Remove duplicates
+    → distinct
+
+Common elements
+    → filter(set::contains)
